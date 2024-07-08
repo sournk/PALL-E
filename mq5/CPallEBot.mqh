@@ -20,6 +20,7 @@
 #include "CDKAdvIndicatorSuperTrend.mqh";
 #include "CDKAdvIndicatorRSI.mqh";
 #include "CDKAdvIndicatorADX.mqh";
+#include "CDKAdvIndicatorZigZag.mqh";
 
 
 class CPallEBot {
@@ -44,6 +45,7 @@ public:
   
   double                   LotMultiplierDefault;
   string                   LotMultiplierCustom;
+  bool                     LotMultiplierToFullVolume;
 
   uint                     StepDefault;
   string                   StepCustom;
@@ -69,8 +71,14 @@ public:
   CDKAdvIndicatorSuperTrend* CPallEBot::InitIndicatorST(const ENUM_TIMEFRAMES _tf, const int _period, const ENUM_APPLIED_PRICE _applied_price, 
                                                         const int _atr_dev_period, const enUseWhat _use_what,
                                                         const uint _bar_start, const uint _bar_count);
+  CDKAdvIndicatorMATrend* CPallEBot::InitIndicatorMATrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, 
+                                                          const uint _bar_start, const uint _bar_count);
   CDKAdvIndicatorADXTrend* CPallEBot::InitIndicatorADXTrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, const int _adx_trernd_line, 
                                                             const uint _bar_start, const uint _bar_count);
+  CDKAdvIndicatorZigZagTrend* CPallEBot::InitIndicatorZigZagTrend(const ENUM_TIMEFRAMES _tf, const int _depth, const int _deviation, const int _backstep, const bool _strict,
+                                                                  const uint _bar_start, const uint _bar_count);
+                                                            
+                                                             
   void                     CPallEBot::AddIndicator(CDKAdvIndicator* _ind, const string _applied_to_grid_size);
   CDKAdvIndicator*         CPallEBot::GetIndicatorByIndex(const int _idx);
                                                         
@@ -151,6 +159,23 @@ CDKAdvIndicatorRSI* CPallEBot::InitIndicatorRSI(const ENUM_TIMEFRAMES _tf, const
 }
 
 //+------------------------------------------------------------------+
+//| Create CDKAdvIndicatorMATrend with ind inputs
+//+------------------------------------------------------------------+
+CDKAdvIndicatorMATrend* CPallEBot::InitIndicatorMATrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, 
+                                                        const uint _bar_start, const uint _bar_count) {
+  CDKAdvIndicatorMATrend* ind = new CDKAdvIndicatorMATrend;
+  ind.IndSymbol = _Symbol;
+  ind.TF = _tf;
+  ind.BarStart = _bar_start;
+  ind.BarCount = _bar_count;
+    
+  ind.MAPeriod = _ma_period;
+  ind.Init();
+  
+  return ind;
+}
+
+//+------------------------------------------------------------------+
 //| Create CDKAdvIndicatorADXTrend with ind inputs
 //+------------------------------------------------------------------+
 CDKAdvIndicatorADXTrend* CPallEBot::InitIndicatorADXTrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, const int _adx_trernd_line, 
@@ -163,6 +188,26 @@ CDKAdvIndicatorADXTrend* CPallEBot::InitIndicatorADXTrend(const ENUM_TIMEFRAMES 
     
   ind.MAPeriod = _ma_period;
   ind.ADXTrendLine = _adx_trernd_line;
+  ind.Init();
+  
+  return ind;
+}
+
+//+------------------------------------------------------------------+
+//| Create CDKAdvIndicatorZigZagTrend with ind inputs
+//+------------------------------------------------------------------+
+CDKAdvIndicatorZigZagTrend* CPallEBot::InitIndicatorZigZagTrend(const ENUM_TIMEFRAMES _tf, const int _depth, const int _deviation, const int _backstep, const bool _strict,
+                                                                const uint _bar_start, const uint _bar_count){
+  CDKAdvIndicatorZigZagTrend* ind = new CDKAdvIndicatorZigZagTrend;
+  ind.IndSymbol = _Symbol;
+  ind.TF = _tf;
+  ind.BarStart = _bar_start;
+  ind.BarCount = _bar_count;
+    
+  ind.Depth = _depth;
+  ind.Deviation = _deviation;
+  ind.Backstep = _backstep;
+  ind.Strict = _strict;
   ind.Init();
   
   return ind;
@@ -291,6 +336,7 @@ void CPallEBot::Init() {
   init_buy.MMType = MMType;
   init_buy.MMValue = MMValue;
   init_buy.LotMultiplier = LotMultiplierDefault;
+  init_buy.RatioToFullVolume = LotMultiplierToFullVolume;
   init_buy.Step = StepDefault;
   init_buy.TakeProfit = TakeProfitDefault;
   init_buy.Trade = TradeBuy;
@@ -306,6 +352,7 @@ void CPallEBot::Init() {
   init_sell.MMType = MMType;
   init_sell.MMValue = MMValue;
   init_sell.LotMultiplier = LotMultiplierDefault;
+  init_sell.RatioToFullVolume = LotMultiplierToFullVolume;
   init_sell.Step = StepDefault;
   init_sell.TakeProfit = TakeProfitDefault;
   init_sell.Trade = TradeSell;
@@ -341,8 +388,9 @@ void CPallEBot::Init() {
 //+------------------------------------------------------------------+
 void CPallEBot::OnTick(void) {
   if (!NewBarDetector.CheckNewBarAvaliable(PERIOD_M1)) return;
-  
   logger.Debug("New bar detected");
+  
+  ShowComment();
   
   if (grid_buy.Size() > 0 || TwoGridsAtOneTime || 
      (grid_buy.Size() <= 0 && !TwoGridsAtOneTime && grid_sell.Size() <= 0))
@@ -359,7 +407,6 @@ void CPallEBot::OnTick(void) {
 //| OnTimer Handler
 //+------------------------------------------------------------------+
 void CPallEBot::OnTimer(void) {
-  ShowComment();
 }
 
 //+------------------------------------------------------------------+
