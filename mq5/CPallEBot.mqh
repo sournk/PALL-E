@@ -42,6 +42,7 @@ public:
   uint                     MaxTrades;
   ENUM_MM_TYPE             MMType;
   double                   MMValue;
+  double                   GridLossMax;  
   
   double                   LotMultiplierDefault;
   string                   LotMultiplierCustom;
@@ -339,6 +340,7 @@ void CPallEBot::Init() {
   init_buy.RatioToFullVolume = LotMultiplierToFullVolume;
   init_buy.Step = StepDefault;
   init_buy.TakeProfit = TakeProfitDefault;
+  init_buy.GridLossMax = GridLossMax;
   init_buy.Trade = TradeBuy;
   
   // Sell Initializer
@@ -355,6 +357,7 @@ void CPallEBot::Init() {
   init_sell.RatioToFullVolume = LotMultiplierToFullVolume;
   init_sell.Step = StepDefault;
   init_sell.TakeProfit = TakeProfitDefault;
+  init_sell.GridLossMax = GridLossMax;
   init_sell.Trade = TradeSell;
   
   // Grids init  
@@ -401,6 +404,9 @@ void CPallEBot::OnTick(void) {
      (grid_sell.Size() <= 0 && !TwoGridsAtOneTime && grid_buy.Size() <= 0))
     grid_sell.OpenNext();
   grid_sell.SetTPFromBreakEven();
+  
+  grid_buy.CheckMaxSLAndCloseGrid();
+  grid_sell.CheckMaxSLAndCloseGrid();
 }
 
 //+------------------------------------------------------------------+
