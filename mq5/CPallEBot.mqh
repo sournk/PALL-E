@@ -409,7 +409,6 @@ void CPallEBot::Init() {
   SetDelay(grid_buy, hash_dbl);
   SetDelay(grid_sell, hash_dbl);
   
-  
   NewBarDetector.AddTimeFrame(PERIOD_M1);
 }
 
