@@ -54,6 +54,9 @@ public:
   uint                     TakeProfitDefault;
   string                   TakeProfitCustom;
   
+  uint                     DelayDefaultMin;                                 // 2.GS.DPD: Delay between Pos Default, min
+  string                   DelayCustomMin;                                  // 2.GS.DPC: Delay between Pos Custom, min  
+  
   CHashMap<uint, string>   GridSizeIndListMap;
 
   // Must be set direclty
@@ -71,7 +74,8 @@ public:
                                                        
   CDKAdvIndicatorSuperTrend* CPallEBot::InitIndicatorST(const ENUM_TIMEFRAMES _tf, const int _period, const ENUM_APPLIED_PRICE _applied_price, 
                                                         const int _atr_dev_period, const enUseWhat _use_what,
-                                                        const uint _bar_start, const uint _bar_count);
+                                                        const uint _bar_start, const uint _bar_count,
+                                                        const uint _min_angle);
   CDKAdvIndicatorMATrend* CPallEBot::InitIndicatorMATrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, 
                                                           const uint _bar_start, const uint _bar_count);
   CDKAdvIndicatorADXTrend* CPallEBot::InitIndicatorADXTrend(const ENUM_TIMEFRAMES _tf, const int _ma_period, const int _adx_trernd_line, 
@@ -87,6 +91,7 @@ public:
   void                     CPallEBot::SetLotMultiplier(CPallEGrid& _grid, CHashMap<uint, double>& _hash);
   void                     CPallEBot::SetStep(CPallEGrid& _grid, CHashMap<uint, double>& _hash);
   void                     CPallEBot::SetTakeProfit(CPallEGrid& _grid, CHashMap<uint, double>& _hash);
+  void                     CPallEBot::SetDelay(CPallEGrid& _grid, CHashMap<uint, double>& _hash);
   void                     CPallEBot::SetFilterIndicators(CPallEGrid& _grid, CHashMap<uint, double>& _hash);
   void                     CPallEBot::Parse(string _str, CHashMap<uint, double>& _hash);
   void                     CPallEBot::Init();
@@ -121,7 +126,8 @@ void CPallEBot::ShowComment() {
 //+------------------------------------------------------------------+
 CDKAdvIndicatorSuperTrend* CPallEBot::InitIndicatorST(const ENUM_TIMEFRAMES _tf, const int _period, const ENUM_APPLIED_PRICE _applied_price, 
                                                       const int _atr_dev_period, const enUseWhat _use_what,
-                                                      const uint _bar_start, const uint _bar_count) {
+                                                      const uint _bar_start, const uint _bar_count,
+                                                      const uint _min_angle) {
   CDKAdvIndicatorSuperTrend* ind = new CDKAdvIndicatorSuperTrend;
   ind.IndSymbol = _Symbol;
   ind.TF = _tf;
@@ -132,6 +138,7 @@ CDKAdvIndicatorSuperTrend* CPallEBot::InitIndicatorST(const ENUM_TIMEFRAMES _tf,
   ind.AppliedPrice = _applied_price;
   ind.AtrDevPeriod = _atr_dev_period;
   ind.UseWhat = _use_what;
+  ind.MinAngle = _min_angle;
 
   ind.Init();
   
@@ -273,6 +280,18 @@ void CPallEBot::SetTakeProfit(CPallEGrid& _grid, CHashMap<uint, double>& _hash) 
 }
 
 //+------------------------------------------------------------------+
+//| Set Custom Delay
+//+------------------------------------------------------------------+
+void CPallEBot::SetDelay(CPallEGrid& _grid, CHashMap<uint, double>& _hash) {
+  double val=0.0;
+  for (uint i=0; i<=MaxTrades; i++) 
+    if (_hash.TryGetValue(i, val)) 
+      _grid.SetDelay(i, (int)val);
+    else 
+      _grid.SetDelay(i, DelayDefaultMin);
+}
+
+//+------------------------------------------------------------------+
 //| Set Filter Indicators
 //+------------------------------------------------------------------+
 void CPallEBot::SetFilterIndicators(CPallEGrid& _grid, CHashMap<uint, double>& _hash) {
@@ -341,6 +360,7 @@ void CPallEBot::Init() {
   init_buy.Step = StepDefault;
   init_buy.TakeProfit = TakeProfitDefault;
   init_buy.GridLossMax = GridLossMax;
+  init_buy.Delay = DelayDefaultMin;
   init_buy.Trade = TradeBuy;
   
   // Sell Initializer
@@ -357,6 +377,7 @@ void CPallEBot::Init() {
   init_sell.RatioToFullVolume = LotMultiplierToFullVolume;
   init_sell.Step = StepDefault;
   init_sell.TakeProfit = TakeProfitDefault;
+  init_sell.Delay = DelayDefaultMin;
   init_sell.GridLossMax = GridLossMax;
   init_sell.Trade = TradeSell;
   
@@ -382,6 +403,12 @@ void CPallEBot::Init() {
   Parse(TakeProfitCustom, hash_dbl);
   SetTakeProfit(grid_buy, hash_dbl);
   SetTakeProfit(grid_sell, hash_dbl);
+  
+  // Set Delay to the grids
+  Parse(DelayCustomMin, hash_dbl);
+  SetDelay(grid_buy, hash_dbl);
+  SetDelay(grid_sell, hash_dbl);
+  
   
   NewBarDetector.AddTimeFrame(PERIOD_M1);
 }
