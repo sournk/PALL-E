@@ -31,6 +31,7 @@ Profit Allocation Load Lifter, Earth-class
 
 Тестирование на консервативных настройках с 2018 по октябрь 2024: 3,7%/мес.
 ![Консервативное](img/UM001.%202024-10-01-Conservative-0.03.png)
+Подробные результаты тестирования MT5 - [открыть HTML](set/XAUUSD-2024-10-01-Conservative-0.03/2024-10-01-Conservative-0.03.html).
 
 #### Агрессивные настройки
 
@@ -38,3 +39,4 @@ Profit Allocation Load Lifter, Earth-class
 Текущая версия настроек подобрана оптимизацией для 2024 года: 13,6%/мес.
 
 ![Агрессивные](img/UM002.%202024-10-01-Aggressive.png)
+Подробные результаты тестирования MT5 - [открыть HTML](set/XAUUSD-2024-10-01-Aggressive/2024-10-01-Aggressive.html).
